@@ -7,8 +7,10 @@ Uma coleção de skills especializadas para estender as capacidades do Claude Co
 - [Sobre Skills](#sobre-skills)
 - [Skills Disponíveis](#skills-disponíveis)
   - [Desenvolvimento](#desenvolvimento)
+  - [Qualidade e Testes](#qualidade-e-testes)
   - [Segurança](#segurança)
   - [Design](#design)
+  - [Conteúdo e Marketing](#conteúdo-e-marketing)
   - [Planejamento e Gestão](#planejamento-e-gestão)
   - [Criação de Skills](#criação-de-skills)
 - [Como Usar](#como-usar)
@@ -163,6 +165,22 @@ Skills são pacotes modulares e auto-contidos que estendem as capacidades do Cla
 
 ### Design
 
+#### design-analyzer
+**Descrição:** Especialista em análise visual e extração de design de páginas web. Transforma qualquer URL em documentação técnica completa de design (cores, tipografia, espaçamento, componentes, wireframe).
+
+**Quando usar:**
+- Analisar design de páginas web existentes
+- Extrair paleta de cores, tipografia e espaçamento
+- Fazer engenharia reversa de UI/UX
+- Documentar design systems de sites
+
+**Recursos:**
+- Scripts de extração de componentes e estilos
+- Templates de documentação de design
+- Integração com Playwright e Chrome MCPs
+
+---
+
 #### design-principles
 **Descrição:** Enforça um sistema de design preciso e minimalista inspirado em Linear, Notion e Stripe. Use ao construir dashboards, interfaces admin ou qualquer UI que precise de precisão nível Jony Ive - limpo, moderno, minimalista com bom gosto.
 
@@ -208,11 +226,140 @@ Skills são pacotes modulares e auto-contidos que estendem as capacidades do Cla
 - Tomada de decisões arquiteturais
 - Documentação de padrões arquiteturais
 
-**Foco:**
-- Padrões de arquitetura
-- Trade-offs e decisões técnicas
-- Escalabilidade e performance
-- Manutenibilidade
+---
+
+#### software-engineer
+**Descrição:** Skill para desenvolvimento de software com boas práticas de engenharia.
+
+**Quando usar:**
+- Implementação de features seguindo padrões de engenharia
+- Code reviews e refatoração
+- Aplicação de princípios SOLID e clean code
+
+---
+
+#### prd-brainstorm
+**Descrição:** Geração interativa de PRDs (Product Requirements Documents) através de brainstorming estruturado.
+
+**Quando usar:**
+- Criar PRDs para novos produtos ou features
+- Brainstorming estruturado de requisitos
+- Documentação de escopo de projeto
+
+---
+
+#### landing-page-prd-architect
+**Descrição:** Arquiteto completo de PRDs para landing pages, gerando documentação visual, técnica e de conteúdo.
+
+**Quando usar:**
+- Planejamento de landing pages profissionais
+- Geração de wireframes e identidade visual
+- Criação de specs técnicas para landing pages
+
+---
+
+#### hero-visual-prompt-generator
+**Descrição:** Gerador de prompts otimizados para criação de imagens e vídeos hero para landing pages e projetos visuais.
+
+**Quando usar:**
+- Criar prompts para imagens hero de alta qualidade
+- Gerar prompts para vídeos promocionais
+- Definir estilos visuais e técnicas de iluminação
+
+---
+
+#### napkin
+**Descrição:** Mantém um runbook curado por repositório (`.claude/napkin.md`) com orientações de alta prioridade organizadas por categorias. Ativo em toda sessão.
+
+**Quando usar:**
+- Ativo automaticamente em toda sessão
+- Curadoria contínua de conhecimento do repositório
+- Manutenção de runbook para reuso entre sessões
+
+---
+
+### Qualidade e Testes
+
+#### code-quality-check
+**Descrição:** Verificação de qualidade de código com detecção automática de ferramentas e análise de issues comuns.
+
+**Quando usar:**
+- Verificar qualidade do código antes de commits
+- Detectar problemas comuns de código
+- Análise de linting e formatação
+
+---
+
+#### playwright-cli
+**Descrição:** Automação de browser para testes web, preenchimento de formulários, screenshots e extração de dados usando playwright-cli.
+
+**Quando usar:**
+- Navegar e interagir com páginas web
+- Testes de aplicações web
+- Screenshots e extração de informações
+- Preenchimento de formulários automatizado
+
+---
+
+### Conteúdo e Marketing
+
+#### course-content-creator
+**Descrição:** Criação de conteúdo estruturado para cursos, com templates e geração de infográficos.
+
+**Quando usar:**
+- Criar conteúdo para cursos e treinamentos
+- Gerar cronogramas e resumos
+- Produzir infográficos educacionais
+
+---
+
+#### youtube-content-generator
+**Descrição:** Gerador de conteúdo otimizado para YouTube.
+
+**Quando usar:**
+- Criar roteiros para vídeos
+- Otimizar títulos e descrições
+- Planejamento de conteúdo para canal
+
+---
+
+#### marketing-expert
+**Descrição:** Especialista em estratégias de marketing digital.
+
+**Quando usar:**
+- Planejamento de campanhas de marketing
+- Estratégias de growth e aquisição
+- Copywriting e comunicação
+
+---
+
+#### seo-optimizer
+**Descrição:** Otimização SEO completa para websites e aplicações web.
+
+**Quando usar:**
+- Otimizar conteúdo para motores de busca
+- Implementar SEO técnico (schema, sitemaps, robots.txt)
+- Melhorar Core Web Vitals e page speed
+
+---
+
+#### last30days-skill
+**Descrição:** Análise de atividades e progresso dos últimos 30 dias.
+
+**Quando usar:**
+- Gerar relatórios de progresso
+- Análise retrospectiva de trabalho
+- Métricas de produtividade
+
+---
+
+#### mobile-responsiveness
+**Descrição:** Desenvolvimento responsivo e mobile-first com CSS moderno e Tailwind CSS.
+
+**Quando usar:**
+- Implementar layouts responsivos
+- Design mobile-first
+- Trabalhar com breakpoints e container queries
 
 ---
 
@@ -368,9 +515,9 @@ Ver arquivo LICENSE.txt em cada skill para detalhes específicos.
 
 ---
 
-**Última atualização:** Janeiro 2025
+**Última atualização:** Março 2026
 
-**Skills no repositório:** 9
+**Skills no repositório:** 22
 - fullstack-dev
 - long-running-agent
 - lisa-prompt-engineering
@@ -378,5 +525,19 @@ Ver arquivo LICENSE.txt em cada skill para detalhes específicos.
 - sprint-context-generator
 - ffuf-skill
 - design-principles
+- design-analyzer
 - software-architecture
+- software-engineer
 - skill-creator
+- code-quality-check
+- playwright-cli
+- course-content-creator
+- youtube-content-generator
+- marketing-expert
+- seo-optimizer
+- last30days-skill
+- mobile-responsiveness
+- prd-brainstorm
+- landing-page-prd-architect
+- hero-visual-prompt-generator
+- napkin
