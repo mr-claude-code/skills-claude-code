@@ -1,0 +1,2 @@
+https://vercel.com/blog/introducing-react-best-practices
+npx skills add vercel-labs/agent-skills
