@@ -815,3 +815,441 @@ export async function GET() {
 | A08:2021 | Software/Data Integrity | Webhook sem verificação, CI/CD poisoning |
 | A09:2021 | Logging/Monitoring Failures | Sem logs de auditoria |
 | A10:2021 | SSRF | Fetch com URL do usuário sem validação |
+
+---
+
+## 17. Race Condition Avançada — Multi-Item Financeiro
+
+### 17.1 Compra Simultânea de Itens Diferentes
+
+**Vulnerável:**
+```javascript
+app.post('/api/purchase/:courseId', authenticate, async (req, res) => {
+  const user = await prisma.user.findUnique({ where: { id: req.user.id } })
+  const course = await prisma.course.findUnique({ where: { id: req.params.courseId } })
+
+  // Verifica se já comprou ESTE curso (ok)
+  const existing = await prisma.enrollment.findFirst({
+    where: { userId: req.user.id, courseId: course.id }
+  })
+  if (existing) return res.status(400).json({ error: 'Já comprado' })
+
+  // Verifica saldo (VULNERÁVEL — leitura sem lock)
+  if (user.balance < course.price) {
+    return res.status(400).json({ error: 'Saldo insuficiente' })
+  }
+
+  // Debita saldo (VULNERÁVEL — escrita sem atomicidade)
+  await prisma.user.update({
+    where: { id: req.user.id },
+    data: { balance: user.balance - course.price }
+  })
+
+  await prisma.enrollment.create({
+    data: { userId: req.user.id, courseId: course.id }
+  })
+
+  res.json({ success: true })
+})
+```
+
+**Ataque — comprar 3 cursos de R$30 com saldo de R$50:**
+```bash
+# Todas as 3 requisições veem saldo = 50 e aprovam
+curl -X POST /api/purchase/curso-A -H "Authorization: Bearer $TOKEN" &
+curl -X POST /api/purchase/curso-B -H "Authorization: Bearer $TOKEN" &
+curl -X POST /api/purchase/curso-C -H "Authorization: Bearer $TOKEN" &
+wait
+# Resultado: 3 cursos comprados, saldo = 50 - 30 = 20 (só debitou um!)
+```
+
+**Correção — transação com lock:**
+```javascript
+app.post('/api/purchase/:courseId', authenticate, async (req, res) => {
+  try {
+    await prisma.$transaction(async (tx) => {
+      // Lock na linha do usuário para evitar leitura concorrente
+      const [user] = await tx.$queryRaw`
+        SELECT * FROM "User" WHERE id = ${req.user.id} FOR UPDATE
+      `
+
+      const course = await tx.course.findUnique({ where: { id: req.params.courseId } })
+      if (!course) throw new Error('Curso não encontrado')
+
+      const existing = await tx.enrollment.findFirst({
+        where: { userId: req.user.id, courseId: course.id }
+      })
+      if (existing) throw new Error('Já comprado')
+
+      if (user.balance < course.price) throw new Error('Saldo insuficiente')
+
+      // Atualização atômica do saldo
+      await tx.user.update({
+        where: { id: req.user.id },
+        data: { balance: { decrement: course.price } }
+      })
+
+      await tx.enrollment.create({
+        data: { userId: req.user.id, courseId: course.id }
+      })
+    })
+
+    res.json({ success: true })
+  } catch (err) {
+    res.status(400).json({ error: err.message })
+  }
+})
+```
+
+### 17.2 Reembolso Duplo com Race Condition
+
+**Vulnerável:**
+```javascript
+app.post('/api/refund/:enrollmentId', authenticate, async (req, res) => {
+  const enrollment = await prisma.enrollment.findFirst({
+    where: { id: req.params.enrollmentId, userId: req.user.id }
+  })
+
+  if (!enrollment || enrollment.refunded) {
+    return res.status(400).json({ error: 'Inválido' })
+  }
+
+  // VULNERÁVEL: check e update separados
+  await prisma.enrollment.update({
+    where: { id: enrollment.id },
+    data: { refunded: true }
+  })
+
+  await prisma.user.update({
+    where: { id: req.user.id },
+    data: { balance: { increment: enrollment.price } }
+  })
+
+  res.json({ success: true })
+})
+```
+
+**Correção:**
+```javascript
+app.post('/api/refund/:enrollmentId', authenticate, async (req, res) => {
+  try {
+    await prisma.$transaction(async (tx) => {
+      // Atualizar APENAS se não foi reembolsado (atômico)
+      const updated = await tx.enrollment.updateMany({
+        where: {
+          id: req.params.enrollmentId,
+          userId: req.user.id,
+          refunded: false  // condição atômica
+        },
+        data: { refunded: true }
+      })
+
+      if (updated.count === 0) throw new Error('Já reembolsado ou inválido')
+
+      const enrollment = await tx.enrollment.findUnique({
+        where: { id: req.params.enrollmentId }
+      })
+
+      await tx.user.update({
+        where: { id: req.user.id },
+        data: { balance: { increment: enrollment.price } }
+      })
+    })
+
+    res.json({ success: true })
+  } catch (err) {
+    res.status(400).json({ error: err.message })
+  }
+})
+```
+
+---
+
+## 18. URL/Image Tracker Injection
+
+### 18.1 Injeção de Imagem Externa como Tracker
+
+**Vulnerável:**
+```javascript
+app.put('/api/posts/:id', authenticate, async (req, res) => {
+  const { content, imageUrl } = req.body
+  // Aceita qualquer URL de imagem — permite tracker externo
+  await prisma.post.update({
+    where: { id: req.params.id },
+    data: { content, imageUrl }
+  })
+  res.json({ success: true })
+})
+```
+
+**Ataque:**
+```json
+{
+  "content": "Post normal",
+  "imageUrl": "https://evil-tracker.com/pixel.gif?target=victim123"
+}
+```
+Quando qualquer usuário visualizar o post, o navegador carrega a imagem e revela
+o IP da vítima para o servidor do atacante.
+
+**Correção:**
+```javascript
+const ALLOWED_IMAGE_DOMAINS = [
+  'storage.seuapp.com',
+  'cdn.seuapp.com',
+  'res.cloudinary.com/seuapp'
+]
+
+function isAllowedImageUrl(url) {
+  try {
+    const parsed = new URL(url)
+    return ALLOWED_IMAGE_DOMAINS.some(domain => parsed.hostname.endsWith(domain))
+  } catch {
+    return false
+  }
+}
+
+app.put('/api/posts/:id', authenticate, async (req, res) => {
+  const { content, imageUrl } = req.body
+
+  if (imageUrl && !isAllowedImageUrl(imageUrl)) {
+    return res.status(400).json({ error: 'URL de imagem não permitida' })
+  }
+
+  await prisma.post.update({
+    where: { id: req.params.id },
+    data: { content, imageUrl }
+  })
+  res.json({ success: true })
+})
+```
+
+**CSP adicional no header:**
+```
+Content-Security-Policy: img-src 'self' storage.seuapp.com cdn.seuapp.com;
+```
+
+---
+
+## 19. DoS por Armazenamento (Input Size Abuse)
+
+### 19.1 Campos Sem Limite de Tamanho
+
+**Vulnerável:**
+```javascript
+app.post('/api/comments', authenticate, async (req, res) => {
+  // Sem limite — atacante envia 10MB de texto
+  await prisma.comment.create({
+    data: {
+      text: req.body.text,  // sem validação de tamanho
+      userId: req.user.id,
+      postId: req.body.postId
+    }
+  })
+  res.json({ success: true })
+})
+```
+
+**Ataque:**
+```bash
+# Gerar payload de 10MB e enviar
+python3 -c "print('A' * 10_000_000)" | curl -X POST /api/comments \
+  -H "Authorization: Bearer $TOKEN" \
+  -H "Content-Type: application/json" \
+  -d "{\"text\": \"$(python3 -c "print('A' * 10_000_000)")\", \"postId\": \"123\"}"
+```
+
+**Correção:**
+```javascript
+// 1. Limite global de body
+app.use(express.json({ limit: '1mb' }))
+
+// 2. Validação por campo
+app.post('/api/comments', authenticate, async (req, res) => {
+  const { text, postId } = req.body
+
+  if (!text || text.length > 5000) {
+    return res.status(400).json({ error: 'Comentário muito longo (máx 5000 caracteres)' })
+  }
+
+  await prisma.comment.create({
+    data: { text, userId: req.user.id, postId }
+  })
+  res.json({ success: true })
+})
+```
+
+---
+
+## 20. Fraude em Sistema de Afiliados
+
+### 20.1 Auto-Referência + Reembolso = Dinheiro Infinito
+
+**Cenário de ataque completo:**
+
+```
+1. Atacante se cadastra como afiliado do Curso X (comissão 30%)
+2. Atacante compra Curso X usando próprio link de afiliado (R$100)
+3. Sistema gera comissão de R$30 para o atacante (afiliado)
+4. Atacante solicita saque da comissão (R$30 liberado)
+5. Atacante solicita reembolso dentro do prazo (R$100 devolvido)
+6. Resultado: atacante lucrou R$30 sem gastar nada
+7. Repetir infinitamente
+```
+
+**Vulnerável:**
+```javascript
+// Webhook de compra — gera comissão imediatamente
+app.post('/webhook/purchase', async (req, res) => {
+  const { buyerId, courseId, affiliateId, amount } = req.body
+
+  // Cria enrollment
+  await prisma.enrollment.create({ data: { userId: buyerId, courseId } })
+
+  // Gera comissão IMEDIATAMENTE (VULNERÁVEL)
+  if (affiliateId) {
+    await prisma.commission.create({
+      data: {
+        affiliateId,
+        amount: amount * 0.3,
+        status: 'AVAILABLE'  // já disponível para saque!
+      }
+    })
+  }
+
+  res.json({ ok: true })
+})
+```
+
+**Correção:**
+```javascript
+app.post('/webhook/purchase', async (req, res) => {
+  const { buyerId, courseId, affiliateId, amount } = req.body
+
+  // Bloquear auto-referência
+  if (affiliateId === buyerId) {
+    console.warn(`Auto-referência detectada: user ${buyerId}`)
+    // Não gerar comissão
+    await prisma.enrollment.create({ data: { userId: buyerId, courseId } })
+    return res.json({ ok: true })
+  }
+
+  await prisma.enrollment.create({ data: { userId: buyerId, courseId } })
+
+  if (affiliateId) {
+    await prisma.commission.create({
+      data: {
+        affiliateId,
+        purchaseId: purchase.id,
+        amount: amount * 0.3,
+        status: 'PENDING',         // NÃO disponível imediatamente
+        availableAt: new Date(     // Só disponível após período de reembolso
+          Date.now() + 30 * 24 * 60 * 60 * 1000  // 30 dias
+        )
+      }
+    })
+  }
+
+  res.json({ ok: true })
+})
+
+// Cancelar comissão em caso de reembolso
+app.post('/webhook/refund', async (req, res) => {
+  const { purchaseId } = req.body
+
+  await prisma.commission.updateMany({
+    where: { purchaseId, status: { in: ['PENDING', 'AVAILABLE'] } },
+    data: { status: 'CANCELLED' }
+  })
+
+  // ... processar reembolso
+})
+```
+
+---
+
+## 21. Secrets Vazados por IA em Git History
+
+### 21.1 Padrões Comuns de Vazamento
+
+A IA frequentemente commita secrets quando:
+- Tenta resolver erros de deploy colocando valores diretamente no código
+- Cria arquivos de configuração com credenciais de exemplo reais
+- Não cria `.gitignore` antes do primeiro commit
+
+**Comandos de detecção:**
+```bash
+# Buscar qualquer .env commitado na história
+git log --all --full-history -- "*.env" ".env*"
+
+# Buscar secrets específicos em todo o histórico
+git log --all -p -S "sk_live_" --since="1 year ago"
+git log --all -p -S "AKIA" --since="1 year ago"
+git log --all -p -S "password" -- "*.json" "*.yml" "*.yaml" "*.toml"
+
+# Verificar se .gitignore existia no primeiro commit
+git log --reverse --format="%H" -- ".gitignore" | head -1
+git log --reverse --format="%H" -- ".env" | head -1
+# Se .env foi commitado ANTES do .gitignore → CRÍTICO
+```
+
+**Se secrets foram encontrados no histórico, a correção NÃO é apenas deletar o arquivo.**
+É necessário:
+1. Rotacionar TODAS as chaves expostas imediatamente
+2. Usar `git filter-branch` ou `BFG Repo Cleaner` para remover do histórico
+3. Force push (com cuidado) para limpar o remote
+
+---
+
+## 22. Supabase — Vulnerabilidades Específicas
+
+### 22.1 RLS Mal Configurado
+
+**Vulnerável:**
+```sql
+-- RLS habilitado mas sem políticas = ninguém acessa
+-- Ou pior: política permissiva demais
+CREATE POLICY "allow_all" ON courses FOR ALL USING (true);
+```
+
+**Correção:**
+```sql
+-- Política restritiva: só o dono pode modificar
+CREATE POLICY "owner_only" ON courses
+  FOR ALL
+  USING (auth.uid() = user_id)
+  WITH CHECK (auth.uid() = user_id);
+
+-- Leitura pública, escrita restrita
+CREATE POLICY "public_read" ON courses FOR SELECT USING (true);
+CREATE POLICY "owner_write" ON courses FOR INSERT WITH CHECK (auth.uid() = user_id);
+CREATE POLICY "owner_update" ON courses FOR UPDATE USING (auth.uid() = user_id);
+CREATE POLICY "owner_delete" ON courses FOR DELETE USING (auth.uid() = user_id);
+```
+
+### 22.2 URL de Imagem com Query String Bypass
+
+**Vulnerável:**
+```javascript
+// Valida que URL é do domínio Supabase, mas não valida tamanho
+function isValidImageUrl(url) {
+  return url.startsWith('https://supabase.storage.com/my-bucket/')
+}
+
+// Atacante adiciona query string gigante:
+// https://supabase.storage.com/my-bucket/img.jpg?padding=AAAAAA....(100KB)
+```
+
+**Correção:**
+```javascript
+function isValidImageUrl(url) {
+  try {
+    const parsed = new URL(url)
+    if (!parsed.hostname.endsWith('supabase.co')) return false
+    if (url.length > 500) return false  // URL não precisa ser maior que isso
+    return true
+  } catch {
+    return false
+  }
+}
+```

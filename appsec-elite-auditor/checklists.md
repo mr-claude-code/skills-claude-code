@@ -130,6 +130,54 @@ Checklists executivos para uso rápido durante auditorias. Cada item deve ser ve
 
 ---
 
+## Checklist 9: Race Conditions Avançadas
+
+- [ ] Operações toggle (like, follow, favorite) usam `upsert` ou constraint UNIQUE
+- [ ] Compra simultânea do MESMO item retorna erro para duplicatas
+- [ ] Compra simultânea de itens DIFERENTES debita saldo corretamente (com lock)
+- [ ] Saldo atualizado com `decrement` atômico (não read-then-write)
+- [ ] Reembolso usa condição atômica (`refunded: false` no WHERE)
+- [ ] Reembolso simultâneo do mesmo item não duplica crédito
+- [ ] Cupom de desconto usa transação com lock para evitar uso múltiplo
+- [ ] Operações financeiras usam `SELECT ... FOR UPDATE` ou equivalent
+- [ ] Não é possível ter saldo negativo após operações concorrentes
+- [ ] Trial/período gratuito não pode ser reiniciado via race condition
+
+---
+
+## Checklist 10: Código AI-Generated / Vibe-Coded
+
+- [ ] Nenhum secret commitado no histórico git (verificar com `git log --all -p`)
+- [ ] `.gitignore` foi criado ANTES do primeiro commit com variáveis de ambiente
+- [ ] TODA validação do frontend tem equivalente no backend
+- [ ] Autorização NÃO depende apenas de route guards do React/Vue
+- [ ] Campos obrigatórios são validados no servidor
+- [ ] Auth usa serviço maduro (NextAuth, Supabase Auth, Clerk) quando possível
+- [ ] Se Supabase: RLS habilitado com políticas restritivas (deny by default)
+- [ ] Limites de tamanho de input existem no backend para TODOS os campos
+- [ ] Body limit configurado no middleware (`express.json({ limit })`)
+- [ ] URLs de imagem/mídia restritas ao domínio próprio
+- [ ] Se AI gerou testes: testes cobrem cenários de segurança (IDOR, auth, input)
+- [ ] Prompts de desenvolvimento incluíram instruções explícitas de segurança
+- [ ] Se deploy falhou: verificar se IA não vazou secrets tentando resolver
+
+---
+
+## Checklist 11: Simulação Ofensiva (Self-Hacking)
+
+- [ ] Para cada endpoint financeiro: simular requisições concorrentes
+- [ ] Para cada campo de input: testar payload máximo e tipos inesperados
+- [ ] Para cada recurso com owner: testar acesso por outro usuário (IDOR)
+- [ ] Para cada operação toggle: testar atomicidade com requisições simultâneas
+- [ ] Para cada URL aceita: testar URLs externas maliciosas e trackers
+- [ ] Para cada fluxo de afiliado: testar auto-referência e reembolso
+- [ ] Para cada fluxo de pagamento: testar reembolso após saque de comissão
+- [ ] Para cada upload: testar extensão, MIME type, magic bytes, e tamanho
+- [ ] Verificar honeypots (rotas admin falsas, dados falsos)
+- [ ] Verificar se stack traces vazam informação em produção
+
+---
+
 ## Formato do Relatório de Auditoria
 
 ```markdown
