@@ -236,6 +236,29 @@ This artifact follows the SDD format: formal requirements with RFC 2119 keywords
 - Every requirement should have at least one happy path and one error scenario
 - Scenarios should map directly to test cases in Phase 4
 
+**Delta Specs (for brownfield projects):**
+
+When adding features to an existing codebase, use delta format to show only what changed:
+
+```markdown
+## ADDED Requirements
+### Requirement: [New Feature]
+The system SHALL [new behavior]
+#### Scenario: [scenario name]
+- Given [precondition]
+- When [action]
+- Then [outcome]
+
+## MODIFIED Requirements
+### Requirement: [Existing Feature]
+The system SHALL [updated behavior]
+(Previously: [old behavior])
+
+## REMOVED Requirements
+### Requirement: [Deprecated Feature]
+Reason: [why it's being removed]
+```
+
 ---
 
 ## Template: docs/optimization-checklist.md (Phase 6 - Optimization)
