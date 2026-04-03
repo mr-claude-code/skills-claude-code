@@ -1,0 +1,50 @@
+{
+  "skill_name": "anti-vibe-coding",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "I want to build a task management SaaS for small teams - something like a simplified Trello. Users can create boards, add cards, assign team members, and track progress. I'm an intermediate developer and I want to use Next.js with Supabase. Let's start planning this project properly.",
+      "expected_output": "The skill should walk through Phase 0 (onboarding), Phase 1 (isolation), and begin Phase 2 (foundation) by asking structured questions. It should generate proposal.md and design.md following SDD format. It must NOT jump to code or skip phases.",
+      "files": [],
+      "expectations": [
+        "Asks about developer experience level (Phase 0 onboarding)",
+        "Presents the 7-phase methodology overview",
+        "Asks about environment isolation (Phase 1)",
+        "Begins Phase 2 by asking structured questions about vision, stack, and architecture",
+        "Does NOT generate any code or skip to implementation",
+        "Mentions or follows the SDD/spec-driven approach for artifact generation",
+        "References proposal.md and design.md as the Phase 2 artifacts"
+      ]
+    },
+    {
+      "id": 2,
+      "prompt": "I'm a beginner, just learning to code. I want to create a simple personal blog where I can write and publish posts. I don't know what tech stack to use or how to architect it. Help me plan this project from scratch.",
+      "expected_output": "The skill should detect beginner level and explain concepts along the way. It should recommend a simple stack, explain why, and guide through phases with educational context. It should generate SDD artifacts with beginner-friendly explanations.",
+      "files": [],
+      "expectations": [
+        "Detects or confirms beginner level and adapts language accordingly",
+        "Explains technical concepts before asking questions (e.g., what a framework is, what TDD means)",
+        "Recommends a beginner-friendly stack with rationale",
+        "Recommends monolith architecture for simplicity",
+        "Follows the phase sequence without skipping",
+        "Mentions isolation/security concerns appropriate for beginners",
+        "Uses SDD artifact format (proposal.md, design.md) not a single generic spec"
+      ]
+    },
+    {
+      "id": 3,
+      "prompt": "I'm an advanced developer. I already know I want to use Go with Chi router, PostgreSQL, and React with Vite for the frontend. The project is an invoice management system for freelancers - they can create clients, generate invoices, track payments, and export PDFs. Skip the basics and let's move fast through the planning phases. I'm on a Docker container already.",
+      "expected_output": "The skill should recognize advanced level, acknowledge Docker isolation, and move quickly through Phase 0 and 1. In Phase 2, it should use the developer's stated preferences and ask only about gaps. It should produce concise SDD artifacts without over-explaining.",
+      "files": [],
+      "expectations": [
+        "Acknowledges advanced level and skips unnecessary explanations",
+        "Quickly approves Docker isolation (Phase 1) without lengthy explanation",
+        "Uses the stated stack (Go, Chi, PostgreSQL, React+Vite) without questioning",
+        "Asks only about gaps not already provided (cache, auth strategy, hosting, etc.)",
+        "Generates or outlines SDD artifacts (proposal.md, design.md) with the stated tech choices",
+        "Maintains phase discipline despite developer wanting to 'move fast'",
+        "Does NOT skip Phase 2 or 3 even though developer wants speed"
+      ]
+    }
+  ]
+}
