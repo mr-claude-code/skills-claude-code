@@ -135,6 +135,11 @@ For **beginners**: Explain why pinning versions matters (avoids vulnerabilities 
 - "Cache strategy? (Redis, Memcached, file cache, none for now)"
 - "Folder structure — any preference or should I suggest one based on the stack?"
 
+#### Scope Calibration
+Based on the project type (MVP vs Production), calibrate the depth:
+- **MVP/Personal**: Fewer questions, pragmatic defaults (monolith, simple auth, VPS). Skip cache strategy, advanced observability.
+- **Production/Enterprise**: Full depth. Pin every version, discuss failover, observability, security hardening.
+
 #### Block 4: Infrastructure (feeds design.md)
 - "How do you plan to host? (VPS, cloud, Vercel, etc.)"
   - Recommend VPS for MVPs: "For an MVP, a simple VPS does the job. No unnecessary abstractions."
