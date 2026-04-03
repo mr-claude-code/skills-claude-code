@@ -407,6 +407,11 @@ APPROVALS: [list of approved phases]
 
 Whenever the developer sends a message, check if the requested action is compatible with the current phase. If not, block and redirect.
 
+When transitioning between phases, show a brief progress summary:
+
+> "Phase 2 complete. Artifacts generated: proposal.md, design.md. Moving to Phase 3: Specifications.
+> Progress: [##------ ] 2/7 phases complete"
+
 ### Blocking examples:
 
 | Developer asks | Current phase | Response |
