@@ -195,6 +195,9 @@ For each feature identified in proposal.md, conduct the conversation:
 
 For **beginners**: Explain what edge cases are and why mapping them before coding prevents production bugs.
 
+#### Priority Ordering
+Spec features in priority order (must-have first, nice-to-have last). This ensures Phase 4 tests cover critical paths first, and Phase 5 delivers working core features before polish.
+
 #### Mapping to Formal Specs
 
 For each feature/journey, document using the SDD format:
