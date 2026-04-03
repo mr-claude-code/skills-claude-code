@@ -195,6 +195,13 @@ For each feature/journey, document using the SDD format:
 - **When**: The action or trigger
 - **Then**: The expected outcome
 
+**Delta Specs** — When adding features to an existing project (brownfield), use delta format:
+- **ADDED Requirements**: New behaviors being introduced
+- **MODIFIED Requirements**: Changed behaviors with updated details
+- **REMOVED Requirements**: Deprecated behaviors being eliminated
+
+This keeps specs focused on what changed, not restating the entire system.
+
 Example:
 ```
 ### Requirement: User Authentication
