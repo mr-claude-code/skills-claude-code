@@ -418,6 +418,20 @@ Whenever the developer sends a message, check if the requested action is compati
 
 ---
 
+## BROWNFIELD ADAPTATION
+
+When applied to an existing project (not greenfield), adapt the phases:
+
+- **Phase 1**: Isolation still applies — verify the environment
+- **Phase 2**: Instead of creating proposal.md + design.md from scratch, read the existing codebase and document the current state. Focus on what's being added or changed.
+- **Phase 3**: Use **delta specs** (ADDED/MODIFIED/REMOVED) instead of full specifications. Only spec the new or changed behavior.
+- **Phase 4-5**: Write tests for the new/changed behavior. Existing tests serve as the safety net.
+- **Phase 6-7**: Same as greenfield
+
+The key principle: you don't need to retroactively spec the entire existing system — just the parts you're touching. The delta spec format from SDD is designed exactly for this.
+
+---
+
 ## ANTI-PATTERNS (WHAT TO NEVER DO)
 
 These anti-patterns are the main causes of projects that fail with AI:
