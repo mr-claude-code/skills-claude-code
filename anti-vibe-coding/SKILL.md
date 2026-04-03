@@ -246,9 +246,13 @@ TDD is MORE important with AI, not less. Without tests, every AI change is a gam
 ### Execution
 
 1. Read `docs/specs/` (all spec files)
-2. For each requirement/scenario mapped, generate automated tests using the test framework from the design.md stack
+2. For each requirement/scenario mapped, generate automated tests using the test framework from the design.md stack. Each Given/When/Then scenario should produce at least one test case:
+   - **Given** → test setup/fixture
+   - **When** → action under test
+   - **Then** → assertion
 3. Use mocks for dependencies that don't exist yet (database, external APIs, etc.)
-4. **STRICT RULE**: If you notice production code being generated alongside tests, STOP and remove it. Tests only in this phase.
+4. Cross-reference: every requirement in specs/ should have corresponding tests. If a requirement has no test, flag it.
+5. **STRICT RULE**: If you notice production code being generated alongside tests, STOP and remove it. Tests only in this phase.
 
 #### Interaction with the developer:
 - Present tests by feature/domain
