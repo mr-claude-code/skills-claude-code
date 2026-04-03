@@ -156,7 +156,16 @@ CLAUDE.md is the agent's long-term memory. The richer it is, the more directed t
 
 ### Gate
 
-Present the generated artifacts to the developer: "Here is the technical foundation of your project. Review both the proposal and design documents and tell me if everything looks right or if you want to adjust anything."
+Present the generated artifacts to the developer with a quick verification checklist:
+
+- [ ] Stack and versions are pinned (no "latest")
+- [ ] Architectural pattern chosen and justified
+- [ ] Folder structure defined
+- [ ] Hosting/infrastructure decided
+- [ ] External services identified
+- [ ] All decisions recorded in CLAUDE.md
+
+"Here is the technical foundation of your project. Review both the proposal and design documents and tell me if everything looks right or if you want to adjust anything."
 
 Only advance when the developer approves.
 
