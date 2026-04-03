@@ -289,7 +289,8 @@ Add to CLAUDE.md the test patterns used, framework, and instruction: "Always run
 
 - Tests exist for all mapped requirements and scenarios
 - Tests run (even if failing, since code doesn't exist yet)
-- Developer approves the coverage
+- Cross-reference: every SHALL requirement in specs/ has at least one test
+- Developer approves the coverage target (recommended: 80%+ for business logic, lower for UI)
 
 ---
 
