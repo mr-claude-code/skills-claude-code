@@ -1,0 +1,49 @@
+{
+  "skill_name": "claude-wiki",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "Quero configurar uma wiki persistente neste projeto para manter uma base de conhecimento organizada. O projeto se chama 'meu-saas'. Configura tudo pra mim — pastas, arquivos iniciais, regras no CLAUDE.md, e espelha no Obsidian.",
+      "expected_output": "Creates full wiki/ and raw/ directory structure locally, initializes index.md and log.md with proper frontmatter, updates CLAUDE.md with wiki rules, and mirrors everything to Obsidian vault under meu-saas/wiki/ and meu-saas/raw/.",
+      "files": [],
+      "expectations": [
+        "Creates wiki/ directory with subdirectories: sources, entities, concepts, decisions, learnings, queries",
+        "Creates raw/ directory with subdirectories: articles, docs, notes, assets",
+        "Creates wiki/index.md with YAML frontmatter including title, type, created, updated fields",
+        "Creates wiki/log.md with an init entry dated today",
+        "Updates or creates CLAUDE.md with wiki rules section",
+        "Uses mcp__obsidian__write_note to create notes in Obsidian under meu-saas/ path",
+        "Reports summary of what was created to the user"
+      ]
+    },
+    {
+      "id": 2,
+      "prompt": "Coloquei um artigo sobre arquitetura hexagonal em raw/articles/hexagonal-architecture.md. Faz a ingestão dele na wiki. O conteúdo do artigo é:\n\n# Hexagonal Architecture\n\nAlso known as Ports and Adapters, proposed by Alistair Cockburn in 2005.\n\n## Core Idea\nThe application communicates with the outside world through ports (interfaces) and adapters (implementations). The domain logic sits at the center, completely isolated from infrastructure concerns.\n\n## Key Benefits\n- Testability: domain logic can be tested without infrastructure\n- Flexibility: swap adapters without changing domain\n- Clear boundaries between business rules and technical details\n\n## Related Patterns\n- Clean Architecture (Robert C. Martin)\n- Onion Architecture (Jeffrey Palermo)\n- Domain-Driven Design (Eric Evans)\n\n## Technologies\nCommonly implemented with Spring Boot, NestJS, or FastAPI.",
+      "expected_output": "Ingests the article: creates a source summary page, entity pages for technologies mentioned, concept pages for architectural patterns, updates index.md and log.md, and syncs everything to Obsidian.",
+      "files": [],
+      "expectations": [
+        "Creates wiki/sources/hexagonal-architecture.md with a structured summary",
+        "Creates or updates entity pages for at least Spring Boot, NestJS, or FastAPI",
+        "Creates a concept page for hexagonal architecture with wikilinks to related concepts",
+        "Mentions related patterns like Clean Architecture or Onion Architecture with wikilinks",
+        "Updates wiki/index.md with the new pages",
+        "Appends an ingest entry to wiki/log.md",
+        "Uses mcp__obsidian__write_note to sync pages to Obsidian",
+        "Reports to user how many pages were created/updated"
+      ]
+    },
+    {
+      "id": 3,
+      "prompt": "wiki status",
+      "expected_output": "Shows wiki statistics: total pages by type, last operations from log, sources ingested vs pending, and Obsidian sync status.",
+      "files": [],
+      "expectations": [
+        "Reads wiki/index.md to count pages by type",
+        "Reads wiki/log.md to show recent operations",
+        "Reports total counts for sources, entities, concepts, decisions, learnings, queries",
+        "Checks raw/ for pending (not yet ingested) sources",
+        "Presents information in a clear, organized format"
+      ]
+    }
+  ]
+}
